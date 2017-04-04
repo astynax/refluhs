@@ -1,0 +1,2 @@
+var React = {};
+var ReactDOM = {};
