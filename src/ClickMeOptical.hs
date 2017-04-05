@@ -3,13 +3,19 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module ClickMe3 ( clickMe3 ) where
+module ClickMeOptical
+    ( Getter
+    , Setter
+    , clickMe
+    ) where
 
 import Control.DeepSeq
 import Data.Text
 import Data.Typeable
 import GHC.Generics
 import React.Flux
+
+import Element
 
 data ToggleAction key = Toggle key deriving (Generic)
 
@@ -26,24 +32,20 @@ instance (Typeable key, Typeable a) => StoreData (ClickMeStore key a) where
     transform (Toggle k) (ClickMeStore get set x) =
         pure . ClickMeStore get set $ set k (not $ get k x) x
 
-clickMe3
+clickMe
     :: forall key a. (Typeable key, NFData key, Typeable a)
     => Getter key a -> Setter key a -> a -> ReactView (key, Text)
-clickMe3 get set x =
+clickMe get set x =
     defineControllerView "clickMe" store
-    $ clickMe_ dispatchToggle
+    $ element_ dispatchToggle
   where
     store = mkStore (ClickMeStore get set x :: ClickMeStore key a)
     dispatchToggle key = [SomeStoreAction store $ Toggle key]
 
-clickMe_
+element_
     :: (key -> ViewEventHandler)
     -> ClickMeStore key a
     -> (key, Text)
-    -- ^ message
     -> ReactElementM ViewEventHandler ()
-clickMe_ dispatch (ClickMeStore get _ state) (key, message) =
-    h3_ [ style [("color", if get key state then "red" else "blue")]
-        , on "onClick" . const $ dispatch key
-        ]
-    $ elemText message
+element_ dispatch (ClickMeStore get _ state) (key, message) =
+    clickMe_ (dispatch key) (get key state) message

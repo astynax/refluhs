@@ -15,12 +15,15 @@ extra-source-files:  README.md
 
 executable refluhs
   hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -Wall
   main-is:             Main.hs
-  other-modules:       ClickMe
-                     , ClickMe2
+  other-modules:       ClickMeOptical
+                     , ClickMeStateful
+                     , ClickMeStoreful
+                     , Element
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
                      , deepseq
-                     , ghcjs-base
                      , react-flux
                      , text

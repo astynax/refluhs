@@ -4,7 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module ClickMe ( clickMe ) where
+module ClickMeStoreful ( clickMe ) where
 
 import Control.DeepSeq
 import Data.Text
@@ -12,9 +12,11 @@ import Data.Typeable
 import GHC.Generics
 import React.Flux
 
+import Element
+
 data ToggleAction tag = Toggle deriving (Generic)
 
-instance NFData tag => NFData (ToggleAction tag)
+instance NFData (ToggleAction tag)
 
 data ClickMeStore tag = ClickMeStore Bool
 
@@ -23,23 +25,19 @@ instance Typeable tag => StoreData (ClickMeStore tag) where
     transform _ (ClickMeStore x) = pure $ ClickMeStore $ not x
 
 clickMe
-    :: forall tag. (Typeable tag, NFData tag)
+    :: forall tag. Typeable tag
     => ReactView (tag, Text)
 clickMe =
     defineControllerView "clickMe" store
-    $ clickMe_ dispatchToggle
+    $ element_ dispatchToggle
   where
     store = mkStore (ClickMeStore True :: ClickMeStore tag)
     dispatchToggle = [SomeStoreAction store Toggle]
 
-clickMe_
+element_
     :: ViewEventHandler
     -> ClickMeStore tag
     -> (tag, Text)
-    -- ^ message
     -> ReactElementM ViewEventHandler ()
-clickMe_ dispatch (ClickMeStore state) (_, message) =
-    h3_ [ style [("color", if state then "red" else "blue")]
-        , on "onClick" . const $ dispatch
-        ]
-    $ elemText message
+element_ dispatch (ClickMeStore state) (_, message) =
+    clickMe_ dispatch state message

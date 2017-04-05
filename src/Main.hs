@@ -4,40 +4,34 @@
 
 module Main where
 
-import Control.DeepSeq
-import Data.Proxy
-import GHC.Generics
 import React.Flux
 
-import ClickMe
-import ClickMe2
-import ClickMe3
+import qualified ClickMeOptical as O
+import qualified ClickMeStateful as A
+import qualified ClickMeStoreful as S
 
 main :: IO ()
 main =
     reactRender "root" demoView ()
 
-instance Generic (Proxy "1")
-instance NFData (Proxy "1")
-
-instance Generic (Proxy "2")
-instance NFData (Proxy "2")
+data Tag1 = T1
+data Tag2 = T2
 
 demoView :: ReactView ()
 demoView =
     defineView "demo" $ \_ -> do
         h1_ "Views w/ taged store"
-        view clickMe (Proxy :: Proxy "1", "ClickMe #1") mempty
-        view clickMe (Proxy :: Proxy "2", "ClickMe #2") mempty
-        view clickMe (Proxy :: Proxy "1", "Clone of ClickMe #1") mempty
+        view S.clickMe (T1, "ClickMe #1") mempty
+        view S.clickMe (T2, "ClickMe #2") mempty
+        view S.clickMe (T1, "Clone of ClickMe #1") mempty
 
         h1_ "Views w/ store + optics"
-        view (clickMe3 get set initial) (1 :: Int, "ClickMe #1") mempty
-        view (clickMe3 get set initial) (2 :: Int, "ClickMe #2") mempty
+        view (O.clickMe get set initial) (1::Int, "ClickMe #1") mempty
+        view (O.clickMe get set initial) (2::Int, "ClickMe #2") mempty
 
         h1_ "Stateful Views"
-        view clickMe2 "ClickMe #1" mempty
-        view clickMe2 "ClickMe #2" mempty
+        view A.clickMe "ClickMe #1" mempty
+        view A.clickMe "ClickMe #2" mempty
     where
       get 1 = fst
       get _ = snd
