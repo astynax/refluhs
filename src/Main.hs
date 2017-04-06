@@ -4,10 +4,11 @@
 
 module Main where
 
+import Data.Monoid
 import React.Flux
 
-import qualified ClickMeOptical as O
-import qualified ClickMeStateful as A
+import qualified ClickMeOptical  as O
+import qualified ClickMeStateful as X
 import qualified ClickMeStoreful as S
 
 main :: IO ()
@@ -19,22 +20,29 @@ data Tag2 = T2
 
 demoView :: ReactView ()
 demoView =
-    defineView "demo" $ \_ -> do
-        h1_ "Views w/ taged store"
-        view S.clickMe (T1, "ClickMe #1") mempty
-        view S.clickMe (T2, "ClickMe #2") mempty
-        view S.clickMe (T1, "Clone of ClickMe #1") mempty
+    defineStatefulView "demo" "ClickMe" $ \message _ -> do
+        input_ [ "className" $= "input-message"
+               , "value" @= message
+               , on "onChange"
+                 $ \evt _ -> ([], Just $ target evt "value")
+               ]
 
-        h1_ "Views w/ store + optics"
-        view (O.clickMe get set initial) (1::Int, "ClickMe #1") mempty
-        view (O.clickMe get set initial) (2::Int, "ClickMe #2") mempty
+        h1_ "Taged store"
+        view S.clickMe (T1, message <> " #1") mempty
+        view S.clickMe (T2, message <> " #2") mempty
+        view S.clickMe (T1, message <> " #1") mempty
 
-        h1_ "Stateful Views"
-        view A.clickMe "ClickMe #1" mempty
-        view A.clickMe "ClickMe #2" mempty
-    where
-      get 1 = fst
-      get _ = snd
-      set 1 x (_, y) = (x, y)
-      set _ y (x, _) = (x, y)
-      initial = (True, True)
+        h1_ "Store + optics"
+        let
+            get (Left _)   (x, _) = x
+            get _          (_, y) = y
+            set (Left _) x (_, y) = (x, y)
+            set _        y (x, _) = (x, y)
+            initial               = (False, False)
+            clickMe               = O.clickMe get set initial
+        view clickMe (Left  (), message <> " #1") mempty
+        view clickMe (Right (), message <> " #2") mempty
+
+        h1_ "Stateful"
+        view X.clickMe (message <> " #1") mempty
+        view X.clickMe (message <> " #2") mempty

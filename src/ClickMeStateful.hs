@@ -5,12 +5,12 @@ module ClickMeStateful ( clickMe ) where
 import Data.Text
 import React.Flux
 
-import Element
+import qualified Element
 
 clickMe :: ReactView Text
 clickMe =
-    defineStatefulView "clickMeStateful" True element_
+    defineStatefulView "clickMeStateful" False clickMe_
 
-element_ :: Bool -> Text -> ReactElementM (StatefulViewEventHandler Bool) ()
-element_ =
-    clickMe_ $ \s -> ([], Just $ not s)
+clickMe_ :: Bool -> Text -> ReactElementM (StatefulViewEventHandler Bool) ()
+clickMe_ =
+    Element.clickMe_ $ \state -> ([], Just $ not state)

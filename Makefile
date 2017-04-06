@@ -7,7 +7,7 @@ OPTIMIZATION = ADVANCED
 all: $(OUTPUT_FILE)
 
 $(OUTPUT_FILE): $(INPUT_FILE)
-	closure $(INPUT_FILE) --externs $(EXTERNS_FILE) --js_output_file $(OUTPUT_FILE) -O $(OPTIMIZATION)
+	closure-compiler $(INPUT_FILE) --externs $(EXTERNS_FILE) --js_output_file $(OUTPUT_FILE) -O $(OPTIMIZATION)
 
 $(INPUT_FILE):
 	stack build

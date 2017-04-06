@@ -1,0 +1,17 @@
+.clickme {
+  font-size: 2em;
+  border: 0.2em outset gray;
+  background: #AAA;
+  color: #000;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+  display: inline-block;
+  cursor: pointer;
+}
+.clickme_active {
+  color: #FF0;
+  background: #777;
+  border-style: inset;
+}
+.input-message {
+  font-size: 1.5em;
+}

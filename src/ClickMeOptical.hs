@@ -15,37 +15,47 @@ import Data.Typeable
 import GHC.Generics
 import React.Flux
 
-import Element
+import qualified Element
 
 data ToggleAction key = Toggle key deriving (Generic)
 
 instance NFData key => NFData (ToggleAction key)
 
-type Getter key a = key -> a -> Bool
-type Setter key a = key -> Bool -> a -> a
+type Getter key state = key -> state -> Bool
+type Setter key state = key -> Bool -> state -> state
 
-data ClickMeStore key a =
-    ClickMeStore (Getter key a) (Setter key a) a
+data ClickMeStore key state =
+    ClickMeStore
+    (Getter key state)
+    (Setter key state)
+    state
 
-instance (Typeable key, Typeable a) => StoreData (ClickMeStore key a) where
-    type StoreAction (ClickMeStore key a) = ToggleAction key
-    transform (Toggle k) (ClickMeStore get set x) =
-        pure . ClickMeStore get set $ set k (not $ get k x) x
+instance (Typeable key, Typeable state)
+         => StoreData (ClickMeStore key state) where
+
+    type StoreAction (ClickMeStore key state) = ToggleAction key
+
+    transform (Toggle key) (ClickMeStore get set oldState) =
+        let newState = set key (not $ get key oldState) oldState
+        in pure $ ClickMeStore get set newState
 
 clickMe
-    :: forall key a. (Typeable key, NFData key, Typeable a)
-    => Getter key a -> Setter key a -> a -> ReactView (key, Text)
+    :: forall key state. (Typeable key, NFData key, Typeable state)
+    => Getter key state
+    -> Setter key state
+    -> state
+    -> ReactView (key, Text)
 clickMe get set x =
-    defineControllerView "clickMe" store
-    $ element_ dispatchToggle
+    defineControllerView "clickMeOptical" store
+    $ clickMe_ dispatchToggle
   where
-    store = mkStore (ClickMeStore get set x :: ClickMeStore key a)
+    store = mkStore (ClickMeStore get set x :: ClickMeStore key state)
     dispatchToggle key = [SomeStoreAction store $ Toggle key]
 
-element_
+clickMe_
     :: (key -> ViewEventHandler)
-    -> ClickMeStore key a
+    -> ClickMeStore key state
     -> (key, Text)
     -> ReactElementM ViewEventHandler ()
-element_ dispatch (ClickMeStore get _ state) (key, message) =
-    clickMe_ (dispatch key) (get key state) message
+clickMe_ dispatch (ClickMeStore get _ state) (key, message) =
+    Element.clickMe_ (dispatch key) (get key state) message

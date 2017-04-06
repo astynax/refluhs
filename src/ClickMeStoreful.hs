@@ -12,7 +12,7 @@ import Data.Typeable
 import GHC.Generics
 import React.Flux
 
-import Element
+import qualified Element
 
 data ToggleAction tag = Toggle deriving (Generic)
 
@@ -22,22 +22,23 @@ data ClickMeStore tag = ClickMeStore Bool
 
 instance Typeable tag => StoreData (ClickMeStore tag) where
     type StoreAction (ClickMeStore tag) = ToggleAction tag
+
     transform _ (ClickMeStore x) = pure $ ClickMeStore $ not x
 
 clickMe
     :: forall tag. Typeable tag
     => ReactView (tag, Text)
 clickMe =
-    defineControllerView "clickMe" store
-    $ element_ dispatchToggle
+    defineControllerView "clickMeStoreful" store
+    $ clickMe_ dispatchToggle
   where
-    store = mkStore (ClickMeStore True :: ClickMeStore tag)
+    store = mkStore (ClickMeStore False :: ClickMeStore tag)
     dispatchToggle = [SomeStoreAction store Toggle]
 
-element_
+clickMe_
     :: ViewEventHandler
     -> ClickMeStore tag
     -> (tag, Text)
     -> ReactElementM ViewEventHandler ()
-element_ dispatch (ClickMeStore state) (_, message) =
-    clickMe_ dispatch state message
+clickMe_ dispatch (ClickMeStore state) (_, message) =
+    Element.clickMe_ dispatch state message
